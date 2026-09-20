@@ -2,6 +2,7 @@
 
 | Version | Change                                                      |
 | ------- | ----------------------------------------------------------- |
+| 1.1.0+exception-frame.1 | build from a modbus-proxy fork that frames exception replies by the protocol rather than by the MBAP length field, for devices that declare it wrong (Marstek Venus D). See Akulatraxas/ha-modbusproxy#43 and tiagocoutinho/modbus-proxy#62 |
 | 1.1.0   | optional multi device support, old config keeps working     |
 | 1.0.19  | upodating build method according to migration process       |
 | 1.0.18  | switching to proper workdir before installing venv          |

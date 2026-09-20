@@ -1,6 +1,6 @@
-name: "modbus-proxy"
+name: "modbus-proxy (exception-frame patch)"
 description: "Proxy for Accessing modbus systems. Allows multiple client connections"
-version: "1.1.0"
+version: "1.1.0+exception-frame.1"
 slug: "modbus_proxy"
 arch:
   - aarch64

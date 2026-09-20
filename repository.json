@@ -1,5 +1,5 @@
 {
-  "name": "Modbus Proxy Repository",
-  "url": "https://github.com/Akulatraxas/ha-modbusproxy",
-  "maintainer": "Julian Jost <julian@jost-online.eu>"
+  "name": "Modbus Proxy Repository (exception-frame patch)",
+  "url": "https://github.com/sphings79/ha-modbusproxy",
+  "maintainer": "sphings79 <43515272+sphings79@users.noreply.github.com>"
 }

@@ -1,3 +1,17 @@
+> **This is a patched fork.** It builds `modbus-proxy` from
+> [sphings79/modbus-proxy@fix/exception-frame-mbap-length](https://github.com/sphings79/modbus-proxy/tree/fix/exception-frame-mbap-length)
+> instead of the PyPI release, so that exception replies are framed by the
+> protocol rather than by the MBAP length field. Devices that declare that
+> field wrong — the Marstek Venus D (EMS v150) sends a nine byte exception
+> claiming 4 where the protocol requires 3 — otherwise stall the bridge for
+> twice the configured timeout on every rejected register.
+>
+> Upstream: [tiagocoutinho/modbus-proxy#62](https://github.com/tiagocoutinho/modbus-proxy/pull/62) ·
+> add-on: [Akulatraxas/ha-modbusproxy#43](https://github.com/Akulatraxas/ha-modbusproxy/pull/43),
+> [#42](https://github.com/Akulatraxas/ha-modbusproxy/issues/42)
+>
+> Everything below is from the original repository.
+
 # Home Assistant AddOn Modbus Proxy
 
 Allows you to connect multiple clients to one single modbus server. Usally one modbus server only allows a single connection and denies any more clients. 
