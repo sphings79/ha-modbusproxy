@@ -154,6 +154,58 @@ class ModBus(Connection):
                 self.log.info("delay after connect: %s", self.connection_time)
                 await asyncio.sleep(self.connection_time)
 
+    async def _read(self):
+        """Read a ModBus TCP reply, tolerating a wrong length on exception frames.
+
+        A Modbus exception PDU is always exactly two bytes: the function code
+        with bit 7 set, followed by the exception code. Some devices declare a
+        length that does not match it. The Marstek Venus D (Control/EMS v150)
+        sends a nine byte exception whose MBAP length field reads 4 where it
+        must read 3, so a reader that trusts the field waits for a byte that is
+        never sent. Here that costs the client its reply and this bridge its
+        device lock for the full timeout, twice over, because write_read
+        retries. The device is in fact answering, and answering promptly.
+
+        For an exception the length field is therefore not consulted. Anything
+        the header announced beyond the three bytes is drained without waiting,
+        so a firmware that one day pads the frame instead of correcting the
+        field cannot leave a stray byte in front of the next reply. The reply
+        is passed on with a corrected length, which keeps every client
+        downstream on a well formed frame whatever the device sent.
+
+        Only replies from the device go through here. Requests from clients are
+        read by Connection._read, where bit 7 of the function code is not an
+        exception marker and must not be treated as one.
+        """
+        header = await self.reader.readexactly(6)
+        size = int.from_bytes(header[4:], "big")
+
+        if size < 2:
+            return header + await self.reader.readexactly(size)
+
+        body = await self.reader.readexactly(2)          # unit id + function code
+        if not body[1] & 0x80:
+            body += await self.reader.readexactly(size - 2)
+            reply = header + body
+            self.log.debug("received %r", reply)
+            return reply
+
+        body += await self.reader.readexactly(1)         # exception code
+        surplus = size - 3
+        if surplus > 0:
+            self.log.debug(
+                "exception frame declared %d bytes after the length field, read 3",
+                size,
+            )
+            try:
+                await asyncio.wait_for(self.reader.readexactly(surplus), 0.05)
+            except (asyncio.TimeoutError, asyncio.IncompleteReadError):
+                pass
+
+        reply = header[:4] + (3).to_bytes(2, "big") + body
+        self.log.debug("received %r", reply)
+        return reply
+
     async def write_read(self, data, attempts=2):
         async with self.lock:
             for i in range(attempts):
